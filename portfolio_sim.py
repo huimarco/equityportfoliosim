@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from data_structures import Signal, Portfolio
+from data_structures import Portfolio
 from portfolio_sim_helpers import transformDaily, getMonthly, calcPerf
 
 def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):

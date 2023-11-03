@@ -15,7 +15,7 @@ def main():
         print('No input file selected. Exiting.')
         return
 
-    newsig_df = pd.read_excel(newsig_file_path, sheet_name='prices')
+    newsig_df = pd.read_excel(newsig_file_path, sheet_name='prices', skiprows=1)
     # Ensure pricing data starts 4 days after signal post (so we have previous price data on day one)
     newsig_df.drop([0, 1, 2, 3], axis=1, inplace=True)
 
@@ -24,7 +24,7 @@ def main():
         print('No input file2 selected. Exiting.')
         return
 
-    sp500_df = pd.read_excel(sp500_file_path, sheet_name='prices')
+    sp500_df = pd.read_excel(sp500_file_path, sheet_name='prices', skiprows=1)
 
     start_date = input_with_validation('Input', 'Enter Start Date (YYYY-MM-DD):', validate_date, 'Invalid date format. Use YYYY-MM-DD.')
 
