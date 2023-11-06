@@ -1,5 +1,6 @@
 # import libraries
 import numpy as np
+from datetime import datetime, timedelta
 
 # Signal class
 class Signal:
@@ -9,6 +10,7 @@ class Signal:
         self.name = name
         self.signaldate = signaldate
         self.expirydate = expirydate
+
         self.pricelast = pricelast
         self.pricedata = iter(pricedata)
 
@@ -19,6 +21,9 @@ class Signal:
         self.age = 0
         self.growth = 0
         self.value = 0
+
+        self.buydate = signaldate + timedelta(days=5)
+        self.buyprice = self.pricenow
 
     # function to print position details
     def display(self):
