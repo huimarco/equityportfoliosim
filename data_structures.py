@@ -56,6 +56,7 @@ class Portfolio:
     def __init__(self, cash):
         self.cash = cash
         self.signallist = []
+        self.soldsigs = []
 
     # print each signal in portfolio
     def display(self):
@@ -89,31 +90,35 @@ class Portfolio:
     
     # function to buy signal
     def buySignal(self, newsig):
-        # return error if new stock value is greater than portfolio value
+        
         if newsig.value > self.getTotalValue():
             raise ValueError('Not enough funds!')
-        
-        # if cash is not enough
+
         if self.cash < newsig.value:
             cash_needed = newsig.value - self.cash
             self.cash = 0
+            idx = 0
 
-            # loop through signals
-            for signal in self.signallist:
-                if cash_needed <= 0:
-                    break
-                cash_to_use = min(cash_needed, signal.value)
-                signal.value -= cash_to_use
+            while cash_needed > 0 and idx < len(self.signallist):
+                cash_to_use = min(cash_needed, self.signallist[idx].value)
+                self.signallist[idx].value -= cash_to_use
                 cash_needed -= cash_to_use
+                self.soldsigs.append([
+                    self.signallist[idx].buydate,
+                    self.signallist[idx].buyprice,
+                    self.signallist[idx].pricenow,
+                    cash_to_use
+                ])
+                if self.signallist[idx].value <= 0:
+                    self.signallist.pop(idx)
+                else:
+                    idx += 1
 
-            # remove sold out stocks from portfolio
-            self.signallist = [newsig for newsig in self.signallist if newsig.value > 0]
+            self.cash -= cash_needed
 
-        # if cash is enough
         else:
             self.cash -= newsig.value
 
-        # add new signal to portfolio
         self.signallist.append(newsig)
 
     # function to buy each position in the datafrane
@@ -135,20 +140,20 @@ class Portfolio:
             self.buyFromDfRow(row, value)
     
     # function to update all prices of all signals
-    def updateMonthlyPrice(self):
+    def updateMonthlyPriceVal(self):
         for signal in self.signallist:
             signal.updateMonthlyPrice()
-
-    # function to update all values of all signals
-    def updateMonthlyVal(self):
-        for signal in self.signallist:
             signal.updateMonthlyVal()
 
     # function to check for positions that lost pricing data during the month
     def dumpExpired(self):
         for signal in self.signallist:
             if signal.pricenext == 0:
-                self.cash += signal.value 
+                self.cash += signal.value
+
+                # record sale
+                self.soldsigs.append([signal.buydate, signal.buyprice, signal.pricenow, signal.value])
+
                 signal.value = 0
                 
         # remove sold out stocks from portfolio
