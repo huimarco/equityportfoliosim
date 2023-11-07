@@ -107,7 +107,8 @@ class Portfolio:
                     self.signallist[idx].buydate,
                     self.signallist[idx].buyprice,
                     self.signallist[idx].pricenow,
-                    cash_to_use
+                    cash_to_use,
+                    self.signallist[idx].sourcedatenam
                 ])
                 if self.signallist[idx].value <= 0:
                     self.signallist.pop(idx)
@@ -152,7 +153,7 @@ class Portfolio:
                 self.cash += signal.value
 
                 # record sale
-                self.soldsigs.append([signal.buydate, signal.buyprice, signal.pricenow, signal.value])
+                self.soldsigs.append([signal.buydate, signal.buyprice, signal.pricenow, signal.value, signal.sourcedatenam])
 
                 signal.value = 0
                 

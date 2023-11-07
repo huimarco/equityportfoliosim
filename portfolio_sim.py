@@ -23,7 +23,7 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
     sold_data = []
     daily_columns = ['Date', 'Cash', 'Portfolio Value', 'Positions Count', 'Position Max Age', 'Position Average Age', 'New Position Count']
     portfolio_columns = ['Date', 'SourceDateNam', 'Source', 'Name', 'Signal Date', 'Last Pricing Date', 'Last Price', 'Previous Price', 'Current Price', 'Next Price','Growth','Value', 'Age']
-    sold_columns = ['Sell Date','Buy Date', 'Buy Price', 'Sell Price', 'Amount']
+    sold_columns = ['Sell Date', 'Buy Date', 'Buy Price', 'Sell Price', 'Amount', 'SourceDateNam']
 
     # loop through the dates using a for loop and range
     for i in range(num_days):
