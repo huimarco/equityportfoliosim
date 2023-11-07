@@ -50,7 +50,7 @@ def main():
             print('Buy Size not provided. Exiting.')
             return
 
-    portfolio_df, daily_df, monthly_df, returns_df = runSim(newsig_df, sp500_df, start_date, end_date, buy_size)
+    portfolio_df, daily_df, monthly_df, returns_df, sold_df = runSim(newsig_df, sp500_df, start_date, end_date, buy_size)
 
     output_excel_file = get_output_file_path()
 
@@ -63,6 +63,7 @@ def main():
         daily_df.to_excel(writer, sheet_name='Daily Summary', index=False)
         monthly_df.to_excel(writer, sheet_name='Monthly Summary', index=False)
         returns_df.to_excel(writer, sheet_name='Returns', index=False)
+        sold_df.to_excel(writer, sheet_name='Positions Sold', index=False)
 
 if __name__ == '__main__':
     main()
