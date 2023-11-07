@@ -29,7 +29,7 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
     for i in range(num_days):
         # getting dates
         current_date = start_date + i * step
-        five_days_ago = current_date - timedelta(days=5)
+        five_days_ago = current_date - timedelta(days=5) # change according to start lag
 
         # status update
         print(current_date.strftime("%Y-%m-%d"))
