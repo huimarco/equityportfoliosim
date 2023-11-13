@@ -1,4 +1,6 @@
 import pandas as pd
+from tqdm import tqdm
+
 from datetime import datetime, timedelta
 from data_structures import Portfolio
 from portfolio_sim_helpers import transformDaily, getMonthly, calcPerf
@@ -26,48 +28,64 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
     sold_columns = ['Sell Date', 'Buy Date', 'Buy Price', 'Sell Price', 'Amount', 'SourceDateNam']
 
     # loop through the dates using a for loop and range
-    for i in range(num_days):
+    for i in tqdm(range(num_days)):
         # getting dates
         current_date = start_date + i * step
         five_days_ago = current_date - timedelta(days=5) # change according to start lag
 
-        # status update
-        print(current_date.strftime("%Y-%m-%d"))
+        try:
+            # status update
+            #print(current_date.strftime("%Y-%m-%d"))
 
-        # update ages, prices, and values
-        my_portfolio.ageOneDay()
-        my_portfolio.updateMonthlyPriceVal()
+            # update ages, prices, and values
+            my_portfolio.ageOneDay()
+            my_portfolio.updateMonthlyPriceVal()
 
-        # dump expired positions
-        my_portfolio.dumpExpired()
+            # dump expired positions
+            my_portfolio.dumpExpired()
 
-        # grab new signals
-        new_signals = df_newsig[df_newsig['Signal Date to Use'] == five_days_ago]
-        buy_size = my_portfolio.getTotalValue() * buy_pcnt
-        my_portfolio.buyFromDf(new_signals, buy_size)
+            # grab new signals
+            new_signals = df_newsig[df_newsig['Signal Date to Use'] == five_days_ago]
+            buy_size = my_portfolio.getTotalValue() * buy_pcnt
+            my_portfolio.buyFromDf(new_signals, buy_size)
 
-        # collect sold signal data
+        except Exception as e:
+            print(f'Error processing on {current_date}: {e}')
+        
+        # collect data
         solddate = current_date
         newlysold = [[solddate] + sublist for sublist in my_portfolio.soldsigs]
         sold_data.extend(newlysold)
         my_portfolio.soldsigs.clear()
 
-        # collect portfolio holdings and summary df data then append to data list
         portfolio_iter_data = [
             {
-                'Date': current_date, 'SourceDateNam': signal.sourcedatenam, 'Source': signal.source, 
-                'Name': signal.name, 'Signal Date': signal.signaldate, 'Last Pricing Date': signal.expirydate,
-                'Last Price': signal.pricelast, 'Previous Price': signal.priceprev, 'Current Price': signal.pricenow,
-                'Next Price': signal.pricenext, 'Growth': signal.growth, 'Value': signal.value, 'Age': signal.age
+                'Date': current_date, 
+                'SourceDateNam': signal.sourcedatenam, 
+                'Source': signal.source, 
+                'Name': signal.name, 
+                'Signal Date': signal.signaldate, 
+                'Last Pricing Date': signal.expirydate,
+                'Last Price': signal.pricelast, 
+                'Previous Price': signal.priceprev, 
+                'Current Price': signal.pricenow,
+                'Next Price': signal.pricenext, 
+                'Growth': signal.growth, 
+                'Value': signal.value, 
+                'Age': signal.age
             }
             for signal in my_portfolio.signallist
         ]
 
         daily_iter_data = [
             {
-                'Date': current_date, 'Cash': my_portfolio.cash, 'Portfolio Value': my_portfolio.getTotalValue(), 
-                'Positions Count': my_portfolio.getSize(), 'Position Max Age': my_portfolio.getMaxAge(), 
-                'Position Average Age': my_portfolio.getAvgAge(), 'New Position Count': len(new_signals)
+                'Date': current_date, 
+                'Cash': my_portfolio.cash, 
+                'Portfolio Value': my_portfolio.getTotalValue(), 
+                'Positions Count': my_portfolio.getSize(), 
+                'Position Max Age': my_portfolio.getMaxAge(), 
+                'Position Average Age': my_portfolio.getAvgAge(), 
+                'New Position Count': len(new_signals)
             }
         ]
 
