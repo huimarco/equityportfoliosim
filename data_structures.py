@@ -77,16 +77,16 @@ class Portfolio:
         if not self.signallist:
             return None
         ages = np.array([signal.age for signal in self.signallist])
-        ages_max = np.max(ages)
-        return  ages_max
+        ages_max_month = (np.max(ages))/30
+        return  ages_max_month
     
     # return the age of oldest signal
     def getAvgAge(self):
         if not self.signallist:
             return None
         ages_sum = np.array([signal.age for signal in self.signallist])
-        ages_avg = np.mean(ages_sum)
-        return ages_avg
+        ages_avg_month = (np.mean(ages_sum))/30
+        return ages_avg_month
     
     # function to buy signal
     def buySignal(self, newsig):
@@ -104,9 +104,9 @@ class Portfolio:
                 self.signallist[idx].value -= cash_to_use
                 cash_needed -= cash_to_use
                 self.soldsigs.append([
+                    self.signallist[idx].pricenow,
                     self.signallist[idx].buydate,
                     self.signallist[idx].buyprice,
-                    self.signallist[idx].pricenow,
                     cash_to_use,
                     self.signallist[idx].sourcedatenam
                 ])
@@ -153,7 +153,7 @@ class Portfolio:
                 self.cash += signal.value
 
                 # record sale
-                self.soldsigs.append([signal.buydate, signal.buyprice, signal.pricenow, signal.value, signal.sourcedatenam])
+                self.soldsigs.append([signal.pricenow, signal.buydate, signal.buyprice, signal.value, signal.sourcedatenam])
 
                 signal.value = 0
                 

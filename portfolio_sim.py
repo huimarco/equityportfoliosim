@@ -1,5 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
+import sys
 
 from datetime import datetime, timedelta
 from data_structures import Portfolio
@@ -25,17 +26,14 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
     sold_data = []
     daily_columns = ['Date', 'Cash', 'Portfolio Value', 'Positions Count', 'Position Max Age', 'Position Average Age', 'New Position Count']
     portfolio_columns = ['Date', 'SourceDateNam', 'Source', 'Name', 'Signal Date', 'Last Pricing Date', 'Last Price', 'Previous Price', 'Current Price', 'Next Price','Growth','Value', 'Age']
-    sold_columns = ['Sell Date', 'Buy Date', 'Buy Price', 'Sell Price', 'Amount', 'SourceDateNam']
+    sold_columns = ['Sell Date', 'Sell Price', 'Buy Date', 'Buy Price', 'Amount', 'SourceDateNam']
 
-    # loop through the dates using a for loop and range
-    for i in tqdm(range(num_days)):
-        # getting dates
-        current_date = start_date + i * step
-        five_days_ago = current_date - timedelta(days=5) # change according to start lag
-
-        try:
-            # status update
-            #print(current_date.strftime("%Y-%m-%d"))
+    try:
+        # loop through the dates using a for loop and range
+        for i in tqdm(range(num_days)):
+            # getting dates
+            current_date = start_date + i * step
+            five_days_ago = current_date - timedelta(days=5) # change according to start lag
 
             # update ages, prices, and values
             my_portfolio.ageOneDay()
@@ -48,65 +46,68 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
             new_signals = df_newsig[df_newsig['Signal Date to Use'] == five_days_ago]
             buy_size = my_portfolio.getTotalValue() * buy_pcnt
             my_portfolio.buyFromDf(new_signals, buy_size)
+            
+            # collect data
+            solddate = current_date
+            newlysold = [[solddate] + sublist for sublist in my_portfolio.soldsigs]
+            sold_data.extend(newlysold)
+            my_portfolio.soldsigs.clear()
 
-        except Exception as e:
-            print(f'Error processing on {current_date}: {e}')
-        
-        # collect data
-        solddate = current_date
-        newlysold = [[solddate] + sublist for sublist in my_portfolio.soldsigs]
-        sold_data.extend(newlysold)
-        my_portfolio.soldsigs.clear()
+            portfolio_iter_data = [
+                {
+                    'Date': current_date, 
+                    'SourceDateNam': signal.sourcedatenam, 
+                    'Source': signal.source, 
+                    'Name': signal.name, 
+                    'Signal Date': signal.signaldate, 
+                    'Last Pricing Date': signal.expirydate,
+                    'Last Price': signal.pricelast, 
+                    'Previous Price': signal.priceprev, 
+                    'Current Price': signal.pricenow,
+                    'Next Price': signal.pricenext, 
+                    'Growth': signal.growth, 
+                    'Value': signal.value, 
+                    'Age': signal.age
+                }
+                for signal in my_portfolio.signallist
+            ]
 
-        portfolio_iter_data = [
-            {
-                'Date': current_date, 
-                'SourceDateNam': signal.sourcedatenam, 
-                'Source': signal.source, 
-                'Name': signal.name, 
-                'Signal Date': signal.signaldate, 
-                'Last Pricing Date': signal.expirydate,
-                'Last Price': signal.pricelast, 
-                'Previous Price': signal.priceprev, 
-                'Current Price': signal.pricenow,
-                'Next Price': signal.pricenext, 
-                'Growth': signal.growth, 
-                'Value': signal.value, 
-                'Age': signal.age
-            }
-            for signal in my_portfolio.signallist
-        ]
+            daily_iter_data = [
+                {
+                    'Date': current_date, 
+                    'Cash': my_portfolio.cash, 
+                    'Portfolio Value': my_portfolio.getTotalValue(), 
+                    'Positions Count': my_portfolio.getSize(), 
+                    'Position Max Age': my_portfolio.getMaxAge(), 
+                    'Position Average Age': my_portfolio.getAvgAge(), 
+                    'New Position Count': len(new_signals)
+                }
+            ]
 
-        daily_iter_data = [
-            {
-                'Date': current_date, 
-                'Cash': my_portfolio.cash, 
-                'Portfolio Value': my_portfolio.getTotalValue(), 
-                'Positions Count': my_portfolio.getSize(), 
-                'Position Max Age': my_portfolio.getMaxAge(), 
-                'Position Average Age': my_portfolio.getAvgAge(), 
-                'New Position Count': len(new_signals)
-            }
-        ]
+            portfolio_data.extend(portfolio_iter_data)
+            daily_data.extend(daily_iter_data)
 
-        portfolio_data.extend(portfolio_iter_data)
-        daily_data.extend(daily_iter_data)
+        # convert data lists to dataframe
+        daily_df = pd.DataFrame(daily_data, columns=daily_columns)
+        portfolio_df = pd.DataFrame(portfolio_data, columns=portfolio_columns)
+        sold_df = pd.DataFrame(sold_data, columns=sold_columns)
 
-    # convert data lists to dataframe
-    daily_df = pd.DataFrame(daily_data, columns=daily_columns)
-    portfolio_df = pd.DataFrame(portfolio_data, columns=portfolio_columns)
-    sold_df = pd.DataFrame(sold_data, columns=sold_columns)
+        # add summary stats to porfolio; add S&P data to summary
+        portfolio_df = pd.merge(portfolio_df, daily_df, on='Date', how='left')
 
-    # add summary stats to porfolio; add S&P data to summary
-    portfolio_df = pd.merge(portfolio_df, daily_df, on='Date', how='left')
+        # make data transformations to daily_df
+        daily_df = transformDaily(daily_df, df_sp500)
 
-    # make data transformations to daily_df
-    daily_df = transformDaily(daily_df, df_sp500)
+        # get monthly data
+        monthly_df = getMonthly(daily_df)
 
-    # get monthly data
-    monthly_df = getMonthly(daily_df)
+        # calculate returns for different time periods
+        returns_df = calcPerf(daily_df)
 
-    # calculate returns for different time periods
-    returns_df = calcPerf(daily_df)
+        return portfolio_df, daily_df, monthly_df, returns_df, sold_df
+    
+    except Exception as e:
+        print(f'Error processing on {current_date}: {e}')
+        sys.exit(1)
 
-    return portfolio_df, daily_df, monthly_df, returns_df, sold_df
+    
