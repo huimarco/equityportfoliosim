@@ -30,7 +30,7 @@ def calcPerfHelper(df_daily, start_str, end_str):
     end_date = datetime.strptime(end_str, "%Y-%m-%d")
 
     # number of years between dates
-    years = ((end_date - start_date).days + 1) / 365.25
+    years = ((end_date - start_date).days) / 365.25
 
     # filter dataframe
     temp = df_daily[(df_daily['Date'] == start_date) | (df_daily['Date'] == end_date)]
