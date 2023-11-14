@@ -15,8 +15,12 @@ def transformDaily(df_daily, df_sp500):
 
 def getMonthly(df_daily):
     # create then group by year-month
-    df_daily['YearMonth'] = df_daily['Date'].dt.strftime('%Y-%m')
-    output = df_daily.groupby('YearMonth').agg({'New Position Count': 'sum', 'Portfolio Value': 'last', 'S&P Portfolio Value': 'last'}).reset_index()
+    #df_daily['YearMonth'] = df_daily['Date'].dt.strftime('%Y-%m')
+    output = df_daily.groupby(df_daily['Date'].dt.strftime('%Y-%m')).agg({'Position Max Age': 'max',
+                                                                          'Position Average Age': 'mean',
+                                                                          'New Position Count': 'sum', 
+                                                                          'Portfolio Value': 'last', 
+                                                                          'S&P Portfolio Value': 'last'}).reset_index()
     # change in portfolio values
     output['Portfolio Growth'] = output['Portfolio Value'].pct_change()
     output['S&P Portfolio Growth'] = output['S&P Portfolio Value'].pct_change()

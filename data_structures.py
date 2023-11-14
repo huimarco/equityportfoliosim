@@ -25,9 +25,13 @@ class Signal:
         self.buydate = signaldate + timedelta(days=5)
         self.buyprice = self.pricenow
 
-    # function to print position details
+    # function to print position details (for testing purposes only)
     def display(self):
-        print(self.sourcedatenam, '   pricelast:', str(self.pricelast), '   priceprev/now/next:', str(self.priceprev), str(self.pricenow), str(self.pricenext), '   growth:', str(self.growth), '   val:', str(self.value))
+        print(self.sourcedatenam, 
+              '   pricelast:', str(self.pricelast), 
+              '   priceprev/now/next:', str(self.priceprev), str(self.pricenow), str(self.pricenext), 
+              '   growth:', str(self.growth), 
+              '   val:', str(self.value))
 
     # function to add one to age
     def ageOneDay(self):
