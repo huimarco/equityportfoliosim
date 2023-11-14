@@ -90,6 +90,7 @@ def calcPerf(df_daily):
     era_names = ['2011+', 'GFC', '2018', 'Into COVID', 'Out of COVID', '2022',
                  '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018',
                  '2019', '2020', '2021', '2022', '2023 YTD']
+    
     returns_df.insert(0, 'Eras', era_names)
 
     return returns_df

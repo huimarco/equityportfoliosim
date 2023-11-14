@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
+from tqdm import tqdm
 
 from portfolio_sim import runSim
 from gui_utils import input_with_validation, validate_date, get_input_file_path, get_output_file_path
@@ -57,13 +58,18 @@ def main():
     if not output_excel_file:
         print('No output file selected. Exiting.')
         return
+    
+    output_dfs = {
+        'Portfolio': portfolio_df,
+        'Daily Summary': daily_df,
+        'Monthly Summary': monthly_df,
+        'Returns': returns_df,
+        'Positions Sold': sold_df
+    }
 
     with pd.ExcelWriter(output_excel_file, engine='openpyxl') as writer:
-        portfolio_df.to_excel(writer, sheet_name='Portfolio', index=False)
-        daily_df.to_excel(writer, sheet_name='Daily Summary', index=False)
-        monthly_df.to_excel(writer, sheet_name='Monthly Summary', index=False)
-        returns_df.to_excel(writer, sheet_name='Returns', index=False)
-        sold_df.to_excel(writer, sheet_name='Positions Sold', index=False)
+        for sheet_name, df, in tqdm(output_dfs.items()):
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
 
 if __name__ == '__main__':
     main()
