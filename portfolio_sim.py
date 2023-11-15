@@ -4,7 +4,7 @@ import sys
 
 from datetime import datetime, timedelta
 from data_structures import Portfolio
-from portfolio_sim_helpers import transformDaily, getMonthly, calcPerf
+from portfolio_sim_helpers import transformDaily, getMonthly, calcPerf, transformSold
 
 def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
     # convert the date strings to datetime objects
@@ -103,6 +103,9 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
 
         # calculate returns for different time periods
         returns_df = calcPerf(daily_df)
+
+        # make data transformations to sold_df
+        sold_df = transformSold(sold_df)
 
         return portfolio_df, daily_df, monthly_df, returns_df, sold_df
     

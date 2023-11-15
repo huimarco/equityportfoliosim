@@ -28,6 +28,11 @@ def getMonthly(df_daily):
     output['Excess Growth'] = output['Portfolio Growth'] - output['S&P Portfolio Growth']
     return output
 
+def transformSold(df_sold):
+    df_sold['Holding Period (Years)'] = (df_sold['Sell Date'] - df_sold['Buy Date']) / 365.25
+    df_sold['Performance'] = (df_sold['Sell Price'] / df_sold['Buy Price']) - 1
+    return df_sold
+
 def calcPerfHelper(df_daily, start_str, end_str):
     # convert to dates
     start_date = datetime.strptime(start_str, "%Y-%m-%d")
