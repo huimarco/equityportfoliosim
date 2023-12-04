@@ -7,7 +7,7 @@ def transformDaily(df_daily, df_sp500):
     
     # create column for S&P portfolio value
     full = (temp['Cash'] == 0).idxmax() # when cash first runs out
-    growth_factor = temp['S&P Price'] / temp.at[full, 'S&P Price']
+    growth_factor = temp['S&P 500 Price'] / temp.at[full, 'S&P 500 Price']
     temp['S&P Portfolio Value'] = temp.at[full, 'Portfolio Value']
     temp['S&P Portfolio Value'] = temp['S&P Portfolio Value'] * growth_factor
 

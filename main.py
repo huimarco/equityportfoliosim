@@ -77,5 +77,7 @@ def main():
         for sheet_name, df, in tqdm(output_dfs.items()):
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
+    print('Done!')
+
 if __name__ == '__main__':
     main()
