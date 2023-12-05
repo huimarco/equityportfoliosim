@@ -7,14 +7,14 @@ def transformDaily(df_daily, df_benchmarks):
 
     # set both portfolio values equal when cash first runs out
     full = (temp['Cash'] == 0).idxmax()
-    growth_factor = temp['S&P 500 Price'] / temp.at[full, 'S&P 500 Price']
-    growth_factor = temp['Russell 3000 Price'] / temp.at[full, 'Russell 3000 Price']
+    sp_growth_factor = temp['S&P 500 Price'] / temp.at[full, 'S&P 500 Price']
+    rus_growth_factor = temp['Russell 3000 Price'] / temp.at[full, 'Russell 3000 Price']
     temp['S&P Portfolio Value'] = temp.at[full, 'Portfolio Value']
     temp['Russell Portfolio Value'] = temp.at[full, 'Portfolio Value']
 
     # create column for S&P 500 & Russell 3000 portfolio value
-    temp['S&P Portfolio Value'] = temp['S&P Portfolio Value'] * growth_factor
-    temp['Russell Portfolio Value'] = temp['Russell Portfolio Value'] * growth_factor
+    temp['S&P Portfolio Value'] = temp['S&P Portfolio Value'] * sp_growth_factor
+    temp['Russell Portfolio Value'] = temp['Russell Portfolio Value'] * rus_growth_factor
 
     return temp
 
