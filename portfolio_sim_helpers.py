@@ -1,31 +1,44 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
-def transformDaily(df_daily, df_sp500):
+def transformDaily(df_daily, df_benchmarks):
     # join with S&P price dataframe
-    temp = pd.merge(df_daily, df_sp500, on='Date', how='left')
-    
-    # create column for S&P portfolio value
-    full = (temp['Cash'] == 0).idxmax() # when cash first runs out
+    temp = pd.merge(df_daily, df_benchmarks, on='Date', how='left')
+
+    # set both portfolio values equal when cash first runs out
+    full = (temp['Cash'] == 0).idxmax()
     growth_factor = temp['S&P 500 Price'] / temp.at[full, 'S&P 500 Price']
+    growth_factor = temp['Russell 3000 Price'] / temp.at[full, 'Russell 3000 Price']
     temp['S&P Portfolio Value'] = temp.at[full, 'Portfolio Value']
+    temp['Russell Portfolio Value'] = temp.at[full, 'Portfolio Value']
+
+    # create column for S&P 500 & Russell 3000 portfolio value
     temp['S&P Portfolio Value'] = temp['S&P Portfolio Value'] * growth_factor
+    temp['Russell Portfolio Value'] = temp['Russell Portfolio Value'] * growth_factor
 
     return temp
 
 def getMonthly(df_daily):
     # create then group by year-month
     #df_daily['YearMonth'] = df_daily['Date'].dt.strftime('%Y-%m')
-    output = df_daily.groupby(df_daily['Date'].dt.strftime('%Y-%m')).agg({'Position Max Age': 'max',
-                                                                          'Position Average Age': 'mean',
+    output = df_daily.groupby(df_daily['Date'].dt.strftime('%Y-%m')).agg({'Cash': 'last',
+                                                                          'Portfolio Value': 'last',
+                                                                          'Positions Count': 'last',
+                                                                          'Position Max Age': 'last',
+                                                                          'Position Average Age': 'last',
                                                                           'New Position Count': 'sum', 
-                                                                          'Portfolio Value': 'last', 
-                                                                          'S&P Portfolio Value': 'last'}).reset_index()
+                                                                          'S&P Portfolio Value': 'last',
+                                                                          'Russell Portfolio Value': 'last',}).reset_index()
+    
     # change in portfolio values
     output['Portfolio Growth'] = output['Portfolio Value'].pct_change()
     output['S&P Portfolio Growth'] = output['S&P Portfolio Value'].pct_change()
+    output['Russell Portfolio Growth'] = output['Russell Portfolio Value'].pct_change()
+
     # excess performance
-    output['Excess Growth'] = output['Portfolio Growth'] - output['S&P Portfolio Growth']
+    output['S&P Excess Growth'] = output['Portfolio Growth'] - output['S&P Portfolio Growth']
+    output['Russell Excess Growth'] = output['Portfolio Growth'] - output['S&P Portfolio Growth']
+
     return output
 
 def transformSold(df_sold):
@@ -52,21 +65,34 @@ def calcPerfHelper(df_daily, start_str, end_str):
     sp_start = temp['S&P Portfolio Value'].iloc[0]
     sp_end = temp['S&P Portfolio Value'].iloc[1]
 
-    # returns
+    # Russell 3000 portfolio start and end values
+    rus_start = temp['Russell Portfolio Value'].iloc[0]
+    rus_end = temp['Russell Portfolio Value'].iloc[1]
+
+    # returns & excess returns
     portfolio_returns = (portfolio_end/portfolio_start) - 1
     sp_returns = (sp_end/sp_start) - 1
-    excess_returns = portfolio_returns - sp_returns
+    rus_returns = (rus_start/rus_end) - 1
+    sp_excess_returns = portfolio_returns - sp_returns
+    rus_excess_returns = portfolio_returns - rus_returns
 
     # annualised returns
     portfolio_returns_ann = (1+portfolio_returns)**(1/years) - 1
     sp_returns_ann = (1+sp_returns)**(1/years) - 1
-    excess_returns_ann = portfolio_returns_ann - sp_returns_ann
-    outperformed = (excess_returns_ann > 0)*1
+    rus_returns_ann = (1+rus_returns)**(1/years) - 1
+
+    sp_excess_returns_ann = portfolio_returns_ann - sp_returns_ann
+    rus_excess_returns_ann = portfolio_returns_ann - rus_returns_ann
+
+    sp_outperformer = (sp_excess_returns_ann > 0)*1
+    rus_outperformer = (rus_excess_returns_ann > 0)*1
 
     return [start_date, end_date, years, 
             portfolio_start, portfolio_end, portfolio_returns, portfolio_returns_ann, 
             sp_start, sp_end, sp_returns, sp_returns_ann,
-            excess_returns, excess_returns_ann, outperformed]
+            sp_excess_returns, sp_excess_returns_ann, sp_outperformer,
+            rus_start, rus_end, rus_returns, rus_returns_ann,
+            rus_excess_returns, rus_excess_returns_ann, rus_outperformer]
 
 def calcPerf(df_daily):
     date_pairs = [['2011-01-01', '2023-10-01'], ['2008-01-01', '2009-03-01'], ['2018-01-01', '2019-01-01'], 
@@ -85,7 +111,9 @@ def calcPerf(df_daily):
     returns_columns = ['Start Date', 'End Date', 'Years', 
                        'Portfolio Start Val', 'Portfolio End Val', 'Portfolio Returns', 'Portfolio Returns Annualized',
                        'S&P Portfolio Start Val', 'S&P Portfolio End Val', 'S&P Portfolio Returns', 'S&P Portfolio Returns Annualized',
-                       'Excess Returns', 'Excess Returns Annualized', 'Outperformed']
+                       'S&P Excess Returns', 'S&P Excess Returns Annualized', 'S&P Outperformer',
+                       'Russell Portfolio Start Val', 'Russell Portfolio End Val', 'Russell Portfolio Returns', 'Russell Portfolio Returns Annualized',
+                       'Russell Excess Returns', 'Russell Excess Returns Annualized', 'Russell Outperformer']
     
     # loop through date intervals to get performance
     for pair in date_pairs:

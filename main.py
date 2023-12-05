@@ -14,7 +14,7 @@ def main():
     # dict to store input dialog messages
     inputs = {
         'newsig': 'Select an Excel file of portfolio signals',
-        'sp500': 'Select an Excel file of S&P500 prices'
+        'benchmarks': 'Select an Excel file of benchmark prices'
     }
 
     # dict to store dataframes
@@ -57,7 +57,7 @@ def main():
             print('Buy Size not provided. Exiting.')
             return
 
-    portfolio_df, daily_df, monthly_df, returns_df, sold_df = runSim(dfs['newsig'], dfs['sp500'], start_date, end_date, buy_size)
+    portfolio_df, daily_df, monthly_df, returns_df, sold_df = runSim(dfs['newsig'], dfs['benchmarks'], start_date, end_date, buy_size)
 
     output_excel_file = getOutputFilePath()
 

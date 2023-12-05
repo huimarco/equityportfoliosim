@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from data_structures import Portfolio
 from portfolio_sim_helpers import transformDaily, getMonthly, calcPerf, transformSold
 
-def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
+def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
     # convert the date strings to datetime objects
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -96,7 +96,7 @@ def runSim(df_newsig, df_sp500, start_date, end_date, buy_pcnt):
         portfolio_df = pd.merge(portfolio_df, daily_df, on='Date', how='left')
 
         # make data transformations to daily_df
-        daily_df = transformDaily(daily_df, df_sp500)
+        daily_df = transformDaily(daily_df, df_benchmarks)
 
         # get monthly data
         monthly_df = getMonthly(daily_df)
