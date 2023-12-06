@@ -7,8 +7,8 @@ def transformDaily(df_daily, df_benchmarks):
 
     # set both portfolio values equal when cash first runs out
     full = (temp['Cash'] == 0).idxmax()
-    sp_growth_factor = temp['S&P 500 Price'] / temp.at[full, 'S&P 500 Price']
-    rus_growth_factor = temp['Russell 3000 Price'] / temp.at[full, 'Russell 3000 Price']
+    sp_growth_factor = temp['S&P 500'] / temp.at[full, 'S&P 500']
+    rus_growth_factor = temp['Russell 3000'] / temp.at[full, 'Russell 3000']
     temp['S&P Portfolio Value'] = temp.at[full, 'Portfolio Value']
     temp['Russell Portfolio Value'] = temp.at[full, 'Portfolio Value']
 
@@ -24,9 +24,11 @@ def getMonthly(df_daily):
     output = df_daily.groupby(df_daily['Date'].dt.strftime('%Y-%m')).agg({'Cash': 'last',
                                                                           'Portfolio Value': 'last',
                                                                           'Positions Count': 'last',
-                                                                          'Position Max Age': 'last',
-                                                                          'Position Average Age': 'last',
+                                                                          'Position Max Age (M)': 'last',
+                                                                          'Position Average Age (M)': 'last',
                                                                           'New Position Count': 'sum', 
+                                                                          'S&P 500': 'last',
+                                                                          'Russell 3000': 'last',
                                                                           'S&P Portfolio Value': 'last',
                                                                           'Russell Portfolio Value': 'last',}).reset_index()
     
