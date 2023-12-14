@@ -66,10 +66,10 @@ def main():
         return
     
     output_dfs = {
+        'Returns': returns_df,
         'Portfolio': portfolio_df,
         'Daily Summary': daily_df,
         'Monthly Summary': monthly_df,
-        'Returns': returns_df,
         'Positions Sold': sold_df
     }
 

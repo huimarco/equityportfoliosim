@@ -24,7 +24,7 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
     daily_data = []
     portfolio_data = []
     sold_data = []
-    daily_columns = ['Date', 'Cash', 'Portfolio Value', 'Positions Count', 'Position Max Age (M)', 'Position Average Age (M)', 'New Position Count']
+    daily_columns = ['Date', 'Cash', 'Sim Portfolio Value', 'Positions Count', 'Position Max Age (M)', 'Position Average Age (M)', 'New Position Count']
     portfolio_columns = ['Date', 'SourceDateNam', 'Source', 'Name', 'Signal Date', 'Last Pricing Date', 'Last Price', 'Previous Price', 'Current Price', 'Next Price','Growth','Value', 'Age']
     sold_columns = ['Sell Date', 'Sell Price', 'Buy Date', 'Buy Price', 'Amount', 'SourceDateNam']
 
@@ -76,7 +76,7 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
                 {
                     'Date': current_date, 
                     'Cash': my_portfolio.cash, 
-                    'Portfolio Value': my_portfolio.getTotalValue(), 
+                    'Sim Portfolio Value': my_portfolio.getTotalValue(), 
                     'Positions Count': my_portfolio.getSize(), 
                     'Position Max Age (M)': my_portfolio.getMaxAge(), 
                     'Position Average Age (M)': my_portfolio.getAvgAge(), 
@@ -106,7 +106,6 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
 
         # make data transformations to sold_df
         sold_df = transformSold(daily_df, sold_df)
-        print('sold df done!')
 
         return portfolio_df, daily_df, monthly_df, returns_df, sold_df
     
