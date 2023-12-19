@@ -82,17 +82,17 @@ def calcReturnsHelper(df_daily, start_str, end_str):
             returns = (end_val/start_val) - 1
             returns_ann = (1+returns)**(1/years) - 1
         
-        returns_list.extend([start_val, end_val, returns, returns_ann])
+        returns_list.extend([None, start_val, end_val, returns, returns_ann])
 
     return returns_list
 
 def calcReturns(df_daily, date_pairs):
     returns_list = []
     returns_columns = ['Start Date', 'End Date', 'Years', 
-                       'Sim Portfolio Start Val', 'Sim Portfolio End Val', 'Sim Portfolio Returns', 'Sim Portfolio Returns Ann',
-                       'SP5E Portfolio Start Val', 'SP5E Portfolio End Val', 'SP5E Portfolio Returns', 'SP5E Portfolio Returns Ann',
-                       'R3V Portfolio Start Val', 'R3V Portfolio End Val', 'R3V Portfolio Returns', 'R3V Portfolio Returns Ann',
-                       'SP5 Portfolio Start Val', 'SP5 Portfolio End Val', 'SP5 Portfolio Returns', 'SP5 Portfolio Returns Ann']
+                       'Empty1', 'Sim Portfolio Start Val', 'Sim Portfolio End Val', 'Sim Portfolio Returns', 'Sim Portfolio Returns Ann',
+                       'Empty2', 'SP5E Portfolio Start Val', 'SP5E Portfolio End Val', 'SP5E Portfolio Returns', 'SP5E Portfolio Returns Ann',
+                       'Empty3', 'R3V Portfolio Start Val', 'R3V Portfolio End Val', 'R3V Portfolio Returns', 'R3V Portfolio Returns Ann',
+                       'Empty4', 'SP5 Portfolio Start Val', 'SP5 Portfolio End Val', 'SP5 Portfolio Returns', 'SP5 Portfolio Returns Ann']
 
     # loop through date intervals to get performance
     for pair in date_pairs:
@@ -107,10 +107,12 @@ def calcReturns(df_daily, date_pairs):
 
 def calcExcess(df_returns):
     # USE ONLY FOR RETURNS DF. TERRIBLE
+    df_returns['Empty5'] = None
     df_returns['Excess of SP5E'] = df_returns['Sim Portfolio Returns'] - df_returns['SP5E Portfolio Returns']
     df_returns['Excess of R3V'] = df_returns['Sim Portfolio Returns'] - df_returns['R3V Portfolio Returns']
     df_returns['Excess of SP5'] = df_returns['Sim Portfolio Returns'] - df_returns['SP5 Portfolio Returns']
-
+    
+    df_returns['Empty6'] = None
     df_returns['Excess of SP5E Ann'] = df_returns['Sim Portfolio Returns Ann'] - df_returns['SP5E Portfolio Returns Ann']
     df_returns['Excess of R3V Ann'] = df_returns['Sim Portfolio Returns Ann'] - df_returns['R3V Portfolio Returns Ann']
     df_returns['Excess of SP5 Ann'] = df_returns['Sim Portfolio Returns Ann'] - df_returns['SP5 Portfolio Returns Ann']
@@ -122,7 +124,7 @@ def createReturnsDf(df_daily):
     #full = (df_daily['Cash'] == 0).idxmax()
     #full_date = np.datetime64(df_daily.at[full, 'Sim Portfolio Value']).astype(str)
 
-    date_pairs = [['2008-10-04', '2023-10-01'], 
+    date_pairs = [['2008-10-04', '2023-10-01'], # NEEDS TO BE REDONE TO AVOID HARD CODING
                   ['2011-01-01', '2023-10-01'], ['2008-01-01', '2009-03-01'], ['2018-01-01', '2019-01-01'], 
                   ['2020-01-01', '2020-04-01'], ['2020-04-01', '2021-01-01'], ['2022-01-01', '2023-01-01'],
 
@@ -137,6 +139,15 @@ def createReturnsDf(df_daily):
     
     output = calcReturns(df_daily, date_pairs)
     calcExcess(output)
+
+    # add hardcoded names
+    era_names = ['Full Period', 
+                 '2011+', 'GFC', '2018', 'Into COVID', 'Out of COVID', '2022',
+                 '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018',
+                 '2019', '2020', '2021', '2022', '2023 YTD',
+                 '2011+3', '2012+3', '2013+3', '2014+3', '2015+3', '2016+3', '2017+3', '2018+3', '2019+3', '2020+3']
+    
+    output.insert(0, 'Eras', era_names)
 
     return output
 
@@ -165,6 +176,7 @@ def transformSold(df_daily, df_sold):
                  'R3V Portfolio Start Val', 'R3V Portfolio End Val',
                  'SP5 Portfolio Start Val', 'SP5 Portfolio End Val'], axis=1, inplace=True)
     
+    output['Empty5'] = None
     output['Excess of Portfolio'] = output['Security Performance'] - output['Sim Portfolio Returns']
     output['Excess of SP5E'] = output['Security Performance'] - output['SP5E Portfolio Returns']
     output['Excess of R3V'] = output['Security Performance'] - output['R3V Portfolio Returns']
