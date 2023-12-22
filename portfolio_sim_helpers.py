@@ -32,8 +32,7 @@ def transformDaily(df_daily, df_benchmarks):
     return temp
 
 def getMonthly(df_daily):
-    # create then group by year-month
-    #df_daily['YearMonth'] = df_daily['Date'].dt.strftime('%Y-%m')
+    #group by year-month
     temp = df_daily.groupby(df_daily['Date'].dt.strftime('%Y-%m')).agg({'Cash': 'last',
                                                                         'Sim Portfolio Value': 'last',
                                                                         'Positions Count': 'last',
@@ -68,11 +67,11 @@ def calcReturnsHelper(df_daily, start_str, end_str):
     # initialize returns lists
     returns_list = [start_date, end_date, years]
 
-    metrics = ['Sim', 'SP5E', 'R3V', 'SP5']
+    metrics = ['Sim Portfolio Value', 'SP5E', 'R3V', 'SP5']
     for i in metrics:
         # extract start and end values
-        start_val = temp[f'{i} Portfolio Value'].iloc[0]
-        end_val = temp[f'{i} Portfolio Value'].iloc[1]
+        start_val = temp[i].iloc[0]
+        end_val = temp[i].iloc[1]
 
         # calculate gross and annualized returns
         if start_val == 0:
@@ -89,10 +88,10 @@ def calcReturnsHelper(df_daily, start_str, end_str):
 def calcReturns(df_daily, date_pairs):
     returns_list = []
     returns_columns = ['Start Date', 'End Date', 'Years', 
-                       'Empty1', 'Sim Portfolio Start Val', 'Sim Portfolio End Val', 'Sim Portfolio Returns', 'Sim Portfolio Returns Ann',
-                       'Empty2', 'SP5E Portfolio Start Val', 'SP5E Portfolio End Val', 'SP5E Portfolio Returns', 'SP5E Portfolio Returns Ann',
-                       'Empty3', 'R3V Portfolio Start Val', 'R3V Portfolio End Val', 'R3V Portfolio Returns', 'R3V Portfolio Returns Ann',
-                       'Empty4', 'SP5 Portfolio Start Val', 'SP5 Portfolio End Val', 'SP5 Portfolio Returns', 'SP5 Portfolio Returns Ann']
+                       'Empty1', 'Sim Start Val', 'Sim End Val', 'Sim Returns', 'Sim Returns Ann',
+                       'Empty2', 'SP5E Start Val', 'SP5E End Val', 'SP5E Returns', 'SP5E Returns Ann',
+                       'Empty3', 'R3V Start Val', 'R3V End Val', 'R3V Returns', 'R3V Returns Ann',
+                       'Empty4', 'SP5 Start Val', 'SP5 End Val', 'SP5 Returns', 'SP5 Returns Ann']
 
     # loop through date intervals to get performance
     for pair in date_pairs:
@@ -108,21 +107,22 @@ def calcReturns(df_daily, date_pairs):
 def calcExcess(df_returns):
     # USE ONLY FOR RETURNS DF. TERRIBLE
     df_returns['Empty5'] = None
-    df_returns['Excess of SP5E'] = df_returns['Sim Portfolio Returns'] - df_returns['SP5E Portfolio Returns']
-    df_returns['Excess of R3V'] = df_returns['Sim Portfolio Returns'] - df_returns['R3V Portfolio Returns']
-    df_returns['Excess of SP5'] = df_returns['Sim Portfolio Returns'] - df_returns['SP5 Portfolio Returns']
+    df_returns['Excess of SP5E'] = df_returns['Sim Returns'] - df_returns['SP5E Returns']
+    df_returns['Excess of R3V'] = df_returns['Sim Returns'] - df_returns['R3V Returns']
+    df_returns['Excess of SP5'] = df_returns['Sim Returns'] - df_returns['SP5 Returns']
     
     df_returns['Empty6'] = None
-    df_returns['Excess of SP5E Ann'] = df_returns['Sim Portfolio Returns Ann'] - df_returns['SP5E Portfolio Returns Ann']
-    df_returns['Excess of R3V Ann'] = df_returns['Sim Portfolio Returns Ann'] - df_returns['R3V Portfolio Returns Ann']
-    df_returns['Excess of SP5 Ann'] = df_returns['Sim Portfolio Returns Ann'] - df_returns['SP5 Portfolio Returns Ann']
+    df_returns['Excess of SP5E Ann'] = df_returns['Sim Returns Ann'] - df_returns['SP5E Returns Ann']
+    df_returns['Excess of R3V Ann'] = df_returns['Sim Returns Ann'] - df_returns['R3V Returns Ann']
+    df_returns['Excess of SP5 Ann'] = df_returns['Sim Returns Ann'] - df_returns['SP5 Returns Ann']
 
 
 def createReturnsDf(df_daily):
 
     # find point when cash first runs out
-    #full = (df_daily['Cash'] == 0).idxmax()
-    #full_date = np.datetime64(df_daily.at[full, 'Sim Portfolio Value']).astype(str)
+    full = (df_daily['Cash'] == 0).idxmax()
+    full_date = df_daily.at[full, 'Date']
+    print(full_date)
 
     date_pairs = [['2008-10-04', '2023-10-01'], # NEEDS TO BE REDONE TO AVOID HARD CODING
                   ['2011-01-01', '2023-10-01'], ['2008-01-01', '2009-03-01'], ['2018-01-01', '2019-01-01'], 
@@ -145,7 +145,7 @@ def createReturnsDf(df_daily):
                  '2011+', 'GFC', '2018', 'Into COVID', 'Out of COVID', '2022',
                  '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018',
                  '2019', '2020', '2021', '2022', '2023 YTD',
-                 '2011+3', '2012+3', '2013+3', '2014+3', '2015+3', '2016+3', '2017+3', '2018+3', '2019+3', '2020+3']
+                 '2011-2013', '2012-2014', '2013-2015', '2014-2016', '2015-2017', '2016-2018', '2017-2019', '2018-2020', '2019-2021', '2020-2022']
     
     output.insert(0, 'Eras', era_names)
 
@@ -171,16 +171,16 @@ def transformSold(df_daily, df_sold):
     output = df_sold.merge(temp, how='left', left_on=['Buy Date', 'Sell Date'], right_on=['Start Date','End Date'])
 
     # drop columns (TERRIBLE, DONT CALCULATE THEM IN FIRST PLACE)
-    output.drop(['Sim Portfolio Start Val', 'Sim Portfolio End Val',
-                 'SP5E Portfolio Start Val', 'SP5E Portfolio End Val',
-                 'R3V Portfolio Start Val', 'R3V Portfolio End Val',
-                 'SP5 Portfolio Start Val', 'SP5 Portfolio End Val'], axis=1, inplace=True)
+    output.drop(['Sim Start Val', 'Sim End Val',
+                 'SP5E Start Val', 'SP5E End Val',
+                 'R3V Start Val', 'R3V End Val',
+                 'SP5 Start Val', 'SP5 End Val'], axis=1, inplace=True)
     
     output['Empty5'] = None
-    output['Excess of Portfolio'] = output['Security Performance'] - output['Sim Portfolio Returns']
-    output['Excess of SP5E'] = output['Security Performance'] - output['SP5E Portfolio Returns']
-    output['Excess of R3V'] = output['Security Performance'] - output['R3V Portfolio Returns']
-    output['Excess of SP5'] = output['Security Performance'] - output['SP5 Portfolio Returns']
+    output['Excess of Portfolio'] = output['Security Performance'] - output['Sim Returns']
+    output['Excess of SP5E'] = output['Security Performance'] - output['SP5E Returns']
+    output['Excess of R3V'] = output['Security Performance'] - output['R3V Returns']
+    output['Excess of SP5'] = output['Security Performance'] - output['SP5 Returns']
 
     #output['Excess of Portfolio Ann'] = output['Security Performance Ann'] - output['Sim Portfolio Returns Ann']
     #output['Excess of SP5E Ann'] = output['Security Performance Ann'] - output['SP5E Portfolio Returns Ann']
