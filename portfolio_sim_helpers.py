@@ -14,13 +14,15 @@ def transformDaily(df_daily, df_benchmarks):
     # join with S&P price dataframe
     temp = pd.merge(df_daily, df_benchmarks, on='Date', how='left')
 
-    # find point when cash first runs out
-    full = (temp['Cash'] == 0).idxmax()
-
     # loop through benchmarks and create columns for value
     benchmarks = ['SP5E', 'R3V', 'SP5']
     for i in benchmarks:
         # set starting value to sim portfolio value when cash runs out
+        if i == 'SP5E':
+             full = (temp['SP5E'] != 0).idxmax()
+        else:
+             full = (temp['Cash'] == 0).idxmax()
+        
         temp[f'{i} Portfolio Value'] = temp.at[full, 'Sim Portfolio Value']
         # create growth factor column
         growth_factor = temp[i] / temp.at[full, i]

@@ -1,12 +1,12 @@
 import pandas as pd
-from tqdm import tqdm
+#from tqdm import tqdm
 import sys
 
 from datetime import datetime, timedelta
 from data_structures import Portfolio
-from portfolio_sim_helpers import transformDaily, getMonthly, createReturnsDf, transformSold
+from portfolio_sim_helpers import transformDaily, getMonthly, createReturnsDf, transformSold, calcReturnsHelper
 
-def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
+def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt, simple=False, startlag=5):
     # convert the date strings to datetime objects
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -30,10 +30,10 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
 
     try:
         # loop through the dates using a for loop and range
-        for i in tqdm(range(num_days)):
+        for i in range(num_days):
             # getting dates
             current_date = start_date + i * step
-            five_days_ago = current_date - timedelta(days=5) # change according to start lag
+            five_days_ago = current_date - timedelta(startlag) # change according to start lag
 
             # update ages, prices, and values
             my_portfolio.ageOneDay()
@@ -98,6 +98,11 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
         # make data transformations to daily_df
         daily_df = transformDaily(daily_df, df_benchmarks)
 
+        # for repeated runs, just return 2011+ returns
+        if simple:
+            output = calcReturnsHelper(daily_df, '2011-01-01', '2023-10-01')
+            return output[7]
+        
         # get monthly data
         monthly_df = getMonthly(daily_df)
 
@@ -106,11 +111,9 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt):
 
         # make data transformations to sold_df
         sold_df = transformSold(daily_df, sold_df)
-
+        
         return portfolio_df, daily_df, monthly_df, returns_df, sold_df
     
     except Exception as e:
         print(f'Error processing on {current_date}: {e}')
         sys.exit(1)
-
-    
