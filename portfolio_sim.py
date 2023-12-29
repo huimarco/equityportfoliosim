@@ -33,7 +33,7 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt, simple=Fals
         for i in range(num_days):
             # getting dates
             current_date = start_date + i * step
-            five_days_ago = current_date - timedelta(startlag) # change according to start lag
+            five_days_ago = current_date - timedelta(startlag) # change according to start lag. CHANGE NAME
 
             # update ages, prices, and values
             my_portfolio.ageOneDay()
@@ -99,7 +99,7 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt, simple=Fals
         daily_df = transformDaily(daily_df, df_benchmarks)
 
         # for repeated runs, just return 2011+ returns
-        if simple:
+        if simple==True:
             output = calcReturnsHelper(daily_df, '2011-01-01', '2023-10-01')
             return output[7]
         

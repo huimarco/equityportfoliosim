@@ -108,6 +108,7 @@ def calcReturns(df_daily, date_pairs):
 
 def calcExcess(df_returns):
     # USE ONLY FOR RETURNS DF. TERRIBLE
+    # change of to vs
     df_returns['Empty5'] = None
     df_returns['Excess of SP5E'] = df_returns['Sim Returns'] - df_returns['SP5E Returns']
     df_returns['Excess of R3V'] = df_returns['Sim Returns'] - df_returns['R3V Returns']
