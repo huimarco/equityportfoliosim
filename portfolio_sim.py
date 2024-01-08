@@ -33,7 +33,7 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt, simple=Fals
         for i in range(num_days):
             # getting dates
             current_date = start_date + i * step
-            five_days_ago = current_date - timedelta(startlag) # change according to start lag. CHANGE NAME
+            n_days_ago = current_date - timedelta(startlag) # change according to start lag. CHANGE NAME
 
             # update ages, prices, and values
             my_portfolio.ageOneDay()
@@ -43,7 +43,7 @@ def runSim(df_newsig, df_benchmarks, start_date, end_date, buy_pcnt, simple=Fals
             my_portfolio.dumpExpired()
 
             # grab new signals
-            new_signals = df_newsig[df_newsig['Signal Date to Use'] == five_days_ago]
+            new_signals = df_newsig[df_newsig['Signal Date to Use'] == n_days_ago]
             buy_size = my_portfolio.getTotalValue() * buy_pcnt
             my_portfolio.buyFromDf(new_signals, buy_size)
             
